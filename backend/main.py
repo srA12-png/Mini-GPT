@@ -23,7 +23,10 @@ app.add_middleware(
     allow_headers=["Content-Type"]
 )
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets" / "minigpt_assets"
+BACKEND_DIR = Path(__file__).resolve().parent
+ASSETS = BACKEND_DIR / "assets"
+if not ASSETS.exists():
+    ASSETS = BACKEND_DIR.parent / "assets" / "minigpt_assets"
 
 engine = MiniGPTEngine(ASSETS / "minigpt_chat.pth")
 retrieval = RetrievalEngine(ASSETS)
