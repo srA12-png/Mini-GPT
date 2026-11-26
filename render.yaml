@@ -18,7 +18,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: minigpt-backend
-          property: url
+        value: https://minigpt-backend.onrender.com
