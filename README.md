@@ -1,12 +1,14 @@
 # MiniGPT — Custom Transformer Research Assistant
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20MiniGPT-0D9488?style=for-the-badge)](https://mini-gpt-ten.vercel.app/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1T8YqimNICzSvJ2ADvMyUT-UCsiyROxME?usp=sharing)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-Transformer-EE4C2C)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-Frontend-61DAFB)](https://react.dev/)
 
 **Live demo:** [https://mini-gpt-ten.vercel.app/](https://mini-gpt-ten.vercel.app/)  
+**Training notebook:** [Open in Google Colab](https://colab.research.google.com/drive/1T8YqimNICzSvJ2ADvMyUT-UCsiyROxME?usp=sharing)  
 **Source code:** [GitHub — Mini-GPT](https://github.com/srA12-png/Mini-GPT)
 
 ## Overview
@@ -78,6 +80,8 @@ The parameter count refers to the locally trained checkpoint, not to a measureme
 6. Predict subsequent tokens autoregressively.
 
 ### Training journey
+
+[View the original Google Colab training notebook](https://colab.research.google.com/drive/1T8YqimNICzSvJ2ADvMyUT-UCsiyROxME?usp=sharing) for the project’s learning and experimentation workflow.
 
 The project started with character-level language modeling and progressively introduced a Transformer, a BPE tokenizer, story-text training, and a small instructional question-answer dataset. Its checkpoint contains model weights and configuration so training and local inference can be decoupled from the web application.
 
