@@ -46,6 +46,7 @@ def home():
 
 
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "ok",
@@ -58,6 +59,7 @@ def health():
 
 
 @app.post("/chat")
+@app.post("/api/chat")
 def chat(request: ChatRequest):
     question = request.message.strip()
     mode = request.mode
