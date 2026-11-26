@@ -18,8 +18,8 @@ if nn is None:
     nn = _UnavailableTorch
 
 if torch is None:
-    def _inference_mode(func):
-        return func
+    def _inference_mode():
+        return lambda func: func
 else:
     _inference_mode = torch.inference_mode
 
