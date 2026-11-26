@@ -1,7 +1,27 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from tokenizers import Tokenizer
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    from tokenizers import Tokenizer
+except ImportError:
+    torch = None
+    nn = None
+    F = None
+    Tokenizer = None
+
+if nn is None:
+    class _UnavailableTorch:
+        class Module:
+            def __init__(self, *args, **kwargs):
+                pass
+
+    nn = _UnavailableTorch
+
+if torch is None:
+    def _inference_mode(func):
+        return func
+else:
+    _inference_mode = torch.inference_mode
 
 
 class Head(nn.Module):
@@ -100,6 +120,12 @@ class GPTLanguageModel(nn.Module):
 
 class MiniGPTEngine:
     def __init__(self, model_path):
+        if torch is None:
+            self.device = "unavailable"
+            self.model = None
+            print("Neural engine unavailable in lightweight deployment.")
+            return
+
         self.device = "cpu"
 
         checkpoint = torch.load(
@@ -125,8 +151,10 @@ class MiniGPTEngine:
 
         print("MiniGPT trained model loaded successfully!")
 
-    @torch.inference_mode()
+    @_inference_mode()
     def reply(self, question, max_new_tokens=40):
+        if torch is None:
+            raise ValueError("Neural mode is unavailable in this lightweight deployment.")
         bos = self.tokenizer.token_to_id("[BOS]")
         user = self.tokenizer.token_to_id("[USER]")
         assistant = self.tokenizer.token_to_id("[ASSISTANT]")

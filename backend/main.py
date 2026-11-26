@@ -50,9 +50,9 @@ def home():
 def health():
     return {
         "status": "ok",
-        "model_loaded": True,
+        "model_loaded": engine.model is not None,
         "device": engine.device,
-        "parameters": sum(p.numel() for p in engine.model.parameters()),
+        "parameters": sum(p.numel() for p in engine.model.parameters()) if engine.model is not None else 0,
         "knowledge_entries": len(retrieval.knowledge),
         "document_chunks": len(retrieval.documents)
     }

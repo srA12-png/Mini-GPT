@@ -1,6 +1,9 @@
 import json
 import re
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
 
 
 class RetrievalEngine:
@@ -13,12 +16,13 @@ class RetrievalEngine:
             (assets / "minigpt_documents.json").read_text(encoding="utf-8")
         )
 
-        print("Loading semantic search model...")
-
-        self.embedder = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2",
-            device="cpu"
-        )
+        self.embedder = None
+        if SentenceTransformer is not None:
+            print("Loading semantic search model...")
+            self.embedder = SentenceTransformer(
+                "sentence-transformers/all-MiniLM-L6-v2",
+                device="cpu"
+            )
 
         self.questions = [
             q for q in self.knowledge
@@ -29,13 +33,13 @@ class RetrievalEngine:
             self.questions,
             convert_to_tensor=True,
             normalize_embeddings=True
-        ) if self.questions else None
+        ) if self.embedder is not None and self.questions else None
 
         self.document_vectors = self.embedder.encode(
             [doc["text"] for doc in self.documents],
             convert_to_tensor=True,
             normalize_embeddings=True
-        ) if self.documents else None
+        ) if self.embedder is not None and self.documents else None
 
         print("Retrieval engine ready!")
 
@@ -54,6 +58,26 @@ class RetrievalEngine:
             }
 
         if re.search(r"\d", question) or not self.questions:
+            return self.unknown_reply()
+
+        if self.embedder is None:
+            tokens = set(re.findall(r"\w+", self.normalize(question)))
+            best = None
+            best_score = 0
+            for matched in self.questions:
+                matched_tokens = set(re.findall(r"\w+", matched))
+                score = len(tokens & matched_tokens)
+                if score > best_score:
+                    best_score = score
+                    best = matched
+            if best is not None and best_score >= 2:
+                return {
+                    "response": self.knowledge[best],
+                    "mode": "knowledge",
+                    "match_type": "keyword",
+                    "matched_question": best,
+                    "sources": []
+                }
             return self.unknown_reply()
 
         vector = self.embedder.encode(
@@ -105,6 +129,30 @@ class RetrievalEngine:
                 "response": "No documents are available.",
                 "mode": "document",
                 "sources": []
+            }
+
+        if self.embedder is None:
+            tokens = set(re.findall(r"\w+", self.normalize(question)))
+            ranked = []
+            for doc in self.documents:
+                doc_tokens = set(re.findall(r"\w+", doc["text"].lower()))
+                score = len(tokens & doc_tokens) / max(1, len(tokens))
+                if score > 0:
+                    ranked.append((score, doc))
+            ranked.sort(key=lambda item: item[0], reverse=True)
+            sources = []
+            passages = []
+            for score, doc in ranked[:2]:
+                passages.append(doc["text"])
+                sources.append({
+                    "filename": doc["source"],
+                    "page": doc["page"],
+                    "similarity": round(score, 3)
+                })
+            return {
+                "response": "\n\n".join(passages) if passages else "No relevant passage found.",
+                "mode": "document",
+                "sources": sources
             }
 
         vector = self.embedder.encode(
